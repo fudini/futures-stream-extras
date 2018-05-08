@@ -1,5 +1,5 @@
-use futures2::{Stream, StreamExt};
-use futures2::stream::{Flatten, Map};
+use futures::Stream;
+use futures::stream::{Flatten, Map};
 
 pub trait FlatMap: Stream {
 

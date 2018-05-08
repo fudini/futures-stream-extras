@@ -1,6 +1,6 @@
 extern crate futures;
 
-//pub mod flat_map;
+pub mod flat_map;
 //pub mod distinct;
 //pub mod scan2;
 //pub mod scan3;
@@ -21,24 +21,24 @@ mod tests {
     //use futures2::stream::{self, iter_ok};
     //use futures2::executor::block_on;
 
-    //use flat_map::*;
+    use flat_map::*;
     //use distinct::*;
     //use combine_latest::*;
     //use scan3::*;
     use with_latest_from::*;
     use fork::*;
 
-    //#[test]
-    //fn flat_map_test() {
+    #[test]
+    fn flat_map_test() {
 
-        //let v: Vec<u8> = vec!(1, 2, 3 ,4 ,5);
-        //let c: Vec<u8> = block_on(iter_ok::<_, ()>(v)
-            //.flat_map(|v| iter_ok::<_, ()>(vec![v, v + 10]))
-            //.collect()).unwrap();
+        let v: Vec<u8> = vec!(1, 2, 3 ,4 ,5);
+        let c: Vec<u8> = iter_ok::<_, ()>(v)
+            .flat_map(|v| iter_ok::<_, ()>(vec![v, v + 10]))
+            .collect().wait().unwrap();
 
-        //let r: Vec<u8> = vec![1, 11, 2, 12, 3, 13, 4, 14, 5, 15];
-        //assert_eq!(c, r);
-    //}
+        let r: Vec<u8> = vec![1, 11, 2, 12, 3, 13, 4, 14, 5, 15];
+        assert_eq!(c, r);
+    }
 
     //#[test]
     //fn distinct_test() {

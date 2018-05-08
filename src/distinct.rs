@@ -1,8 +1,7 @@
 use std::marker::Sized;
-use futures2::task::Context;
-use futures2::{Stream, Async, Poll};
+use futures::{Stream, Async, Poll};
 
-/// A stream combinator used to filter out the duplicates.
+/// A stream combinator used to filter out duplicates.
 ///
 /// This structure is produced by the `Stream::distinct` method.
 #[derive(Debug)]
@@ -21,9 +20,9 @@ impl<S, F> Stream for DistinctState<S, F>
     type Item = S::Item;
     type Error = S::Error;
 
-    fn poll_next(&mut self, cx: &mut Context) -> Poll<Option<Self::Item>, Self::Error> {
+    fn poll(&mut self) -> Poll<Option<Self::Item>, Self::Error> {
         loop {
-            match try_ready!(self.stream.poll_next(cx)) {
+            match try_ready!(self.stream.poll()) {
                 Some(e) => {
                     let mut distinct = false;
                     match self.value {

@@ -1,7 +1,8 @@
+#[macro_use]
 extern crate futures;
 
 pub mod flat_map;
-//pub mod distinct;
+pub mod distinct;
 //pub mod scan2;
 //pub mod scan3;
 pub mod combine_latest;
@@ -22,7 +23,7 @@ mod tests {
     //use futures2::executor::block_on;
 
     use flat_map::*;
-    //use distinct::*;
+    use distinct::*;
     //use combine_latest::*;
     //use scan3::*;
     use with_latest_from::*;
@@ -40,18 +41,18 @@ mod tests {
         assert_eq!(c, r);
     }
 
-    //#[test]
-    //fn distinct_test() {
+    #[test]
+    fn distinct_test() {
 
-        //let v: Vec<u8> = vec!(1, 2, 2, 3, 3, 3, 1);
-        //let c: Vec<u8> = block_on(iter_ok::<_, ()>(v)
-            //.distinct(|a, b| a == b)
-            //.collect()).unwrap();
+        let v: Vec<u8> = vec!(1, 2, 2, 3, 3, 3, 1);
+        let c: Vec<u8> = iter_ok::<_, ()>(v)
+            .distinct(|a, b| a == b)
+            .collect().wait().unwrap();
 
-        //let r: Vec<u8> = vec!(1, 2, 3, 1);
+        let r: Vec<u8> = vec!(1, 2, 3, 1);
 
-        //assert_eq!(c, r);
-    //}
+        assert_eq!(c, r);
+    }
 
     //#[test]
     //fn fork_test() {

@@ -1,9 +1,9 @@
 use std::marker::PhantomData;
-use futures2::{Poll, Async};
-use futures2::task::Context;
-use futures2::stream::Stream;
+use futures::{Poll, Async};
+use futures::stream::Stream;
 
-/// It's like fold but yields a aggregated value over time
+/// It's like scan but doesn't yield the aggregated value
+/// You can specify a return value
 ///
 /// This stream is returned by the `Stream::scan2 method.
 #[derive(Debug)]
@@ -24,8 +24,8 @@ impl<S, F, T, R> Stream for Scan2State<S, F, T, R>
     type Item = R;
     type Error = S::Error;
 
-    fn poll_next(&mut self, cx: &mut Context) -> Poll<Option<Self::Item>, S::Error> {
-        match self.stream.poll_next(cx)? {
+    fn poll(&mut self) -> Poll<Option<Self::Item>, S::Error> {
+        match self.stream.poll()? {
             Async::Ready(Some(v)) => {
                 let state = self.state.take();
                 let (new_state, next_value) = (self.f)(state.unwrap(), v);
@@ -33,7 +33,7 @@ impl<S, F, T, R> Stream for Scan2State<S, F, T, R>
                 Ok(Async::Ready(Some(next_value)))
             }
             Async::Ready(None) => Ok(Async::Ready(None)),
-            Async::Pending => Ok(Async::Pending),
+            Async::NotReady => Ok(Async::NotReady),
         }
     }
 }

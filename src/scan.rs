@@ -1,5 +1,4 @@
 use futures::{Poll, Async};
-use futures::task::Context;
 use futures::stream::Stream;
 
 /// It's like fold but yields aggregated  values over time
@@ -7,7 +6,7 @@ use futures::stream::Stream;
 /// This stream is returned by the `Stream::scan3 method.
 #[derive(Debug)]
 #[must_use = "streams do nothing unless polled"]
-pub struct Scan3State<S, F, T> {
+pub struct ScanState<S, F, T> {
     stream: S,
     f: F,
     // This could be initialized to None if scan
@@ -15,7 +14,7 @@ pub struct Scan3State<S, F, T> {
     state: Option<T>, 
 }
 
-impl<S, F, T> Stream for Scan3State<S, F, T>
+impl<S, F, T> Stream for ScanState<S, F, T>
     where S: Stream,
           F: FnMut(T, S::Item) -> T,
           T: Clone
@@ -23,8 +22,8 @@ impl<S, F, T> Stream for Scan3State<S, F, T>
     type Item = T;
     type Error = S::Error;
 
-    fn poll_next(&mut self, cx: &mut Context) -> Poll<Option<Self::Item>, Self::Error> {
-        match self.stream.poll_next(cx)? {
+    fn poll(&mut self) -> Poll<Option<Self::Item>, Self::Error> {
+        match self.stream.poll()? {
             Async::Ready(Some(v)) => {
                 let state = self.state.take();
                 let new_state = (self.f)(state.unwrap(), v);
@@ -32,19 +31,19 @@ impl<S, F, T> Stream for Scan3State<S, F, T>
                 Ok(Async::Ready(Some(new_state.clone())))
             }
             Async::Ready(None) => Ok(Async::Ready(None)),
-            Async::Pending => Ok(Async::Pending),
+            Async::NotReady => Ok(Async::NotReady),
         }
     }
 }
 
-pub trait Scan3: Stream {
+pub trait Scan: Stream {
 
-    fn scan3<F, T>(self: Self, t: T, f: F) -> Scan3State<Self, F, T>
+    fn scan<F, T>(self: Self, t: T, f: F) -> ScanState<Self, F, T>
     where F: FnMut(T, Self::Item) -> T,
           Self: Sized,
           T: Clone,
     { 
-        Scan3State {
+        ScanState {
             stream: self,
             f: f,
             state: Some(t),
@@ -52,5 +51,5 @@ pub trait Scan3: Stream {
     }
 }
 
-impl<S> Scan3 for S where S: Stream {}
+impl<S> Scan for S where S: Stream {}
 

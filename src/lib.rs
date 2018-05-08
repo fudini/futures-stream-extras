@@ -3,8 +3,8 @@ extern crate futures;
 
 pub mod flat_map;
 pub mod distinct;
-//pub mod scan2;
-//pub mod scan3;
+pub mod scan;
+pub mod scan2;
 pub mod combine_latest;
 pub mod with_latest_from;
 pub mod fork;
@@ -13,19 +13,18 @@ pub mod fork;
 mod tests {
 
     use std::rc::Rc;
+    use std::cell::RefCell;
     use std::thread;
     use std::time::Duration;
     use futures::sync::mpsc::{channel, unbounded};
     use futures::{Future, Sink, Stream};
-    use futures::stream::iter_ok;
-    //use futures2::StreamExt;
-    //use futures2::stream::{self, iter_ok};
-    //use futures2::executor::block_on;
+    use futures::stream::{self, iter_ok};
 
     use flat_map::*;
     use distinct::*;
     //use combine_latest::*;
-    //use scan3::*;
+    use scan::*;
+    use scan2::*;
     use with_latest_from::*;
     use fork::*;
 
@@ -142,30 +141,62 @@ mod tests {
         assert_eq!(c, r);
     }
 
-    //#[test]
-    //fn scan() {
+    #[test]
+    fn scan() {
 
-        //let get_stream = || stream::iter_ok::<_, ()>(vec!(1, 2, 3, 4, 5, 6));
+        let get_stream = || stream::iter_ok::<_, ()>(vec!(1, 2, 3, 4, 5, 6));
 
-        //let r1: Vec<u8> = block_on(get_stream()
-            //.scan3(0, |a, v| a + v)
-            //.collect()).unwrap();
+        let result: Vec<u8> = get_stream()
+            .scan(0, |a, v| a + v)
+            .collect().wait().unwrap();
 
-        //let c1 = vec![1, 3, 6, 10, 15, 21];
+        let expected = vec![1, 3, 6, 10, 15, 21];
 
-        //assert_eq!(r1, c1);
+        assert_eq!(result, expected);
+    }
 
-        ////let r6: Vec<u8> = block_on(get_stream()
-            ////.scan3(
-                ////Rc::new(RefCell::new(vec![])),
-                ////|a, v| {
-                    ////(*a).borrow_mut().push(v);
-                    ////a
-                ////}
-            ////)
-            ////.collect()).unwrap();
+    #[test]
+    fn scan_b() {
 
-        ////println!("{:?}", r6);
-    //}
+        let get_stream = || stream::iter_ok::<_, ()>(vec!(1, 2, 3, 4, 5, 6));
+
+        let result = get_stream()
+            .scan(
+                Rc::new(RefCell::new(vec![])),
+                |a, v| {
+                    (*a).borrow_mut().push(v);
+                    a
+                }
+            )
+            .collect().wait().unwrap();
+
+        let r = Rc::new(RefCell::new(vec![1, 2, 3, 4, 5, 6]));
+        let expected: Vec<Rc<RefCell<Vec<u8>>>> = (0..6).map(|_| r.clone()).collect();
+
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn scan2() {
+
+        let get_stream = || stream::iter_ok::<_, ()>(vec!(1, 2, 3, 1, 2, 3));
+
+        let result: Vec<usize> = get_stream()
+            .scan2(
+                vec![],
+                |mut acc, v| {
+                    acc.push(v);
+                    let len = acc.len();
+                    (acc, len)
+                }
+            )
+            .collect().wait().unwrap();
+
+        let expected = vec![1, 2, 3, 4, 5, 6];
+        
+        assert_eq!(result, expected);
+    }
+
+    //
 }
 

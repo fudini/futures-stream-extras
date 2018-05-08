@@ -94,7 +94,7 @@ mod tests {
     //}
 
     #[test]
-    fn combine_latest() {
+    fn combine_latest_test() {
 
         let (tx1, rx1) = unbounded::<u32>();
         let (tx2, rx2) = unbounded::<u32>();
@@ -130,7 +130,7 @@ mod tests {
     }
 
     #[test]
-    fn with_latest_from() {
+    fn with_latest_from_test() {
 
         let (tx1, rx1) = unbounded::<u32>();
         let (tx2, rx2) = unbounded::<u32>();
@@ -161,7 +161,7 @@ mod tests {
     }
 
     #[test]
-    fn scan() {
+    fn scan_test() {
 
         let get_stream = || stream::iter_ok::<_, ()>(vec!(1, 2, 3, 4, 5, 6));
 
@@ -175,7 +175,7 @@ mod tests {
     }
 
     #[test]
-    fn scan_b() {
+    fn scan_test_2() {
 
         let get_stream = || stream::iter_ok::<_, ()>(vec!(1, 2, 3, 4, 5, 6));
 
@@ -196,7 +196,7 @@ mod tests {
     }
 
     #[test]
-    fn scan2() {
+    fn scan2_test() {
 
         let get_stream = || stream::iter_ok::<_, ()>(vec!(1, 2, 3, 1, 2, 3));
 
@@ -215,7 +215,5 @@ mod tests {
         
         assert_eq!(result, expected);
     }
-
-    //
 }
 

@@ -53,45 +53,45 @@ mod tests {
         assert_eq!(c, r);
     }
 
-    //#[test]
-    //fn fork_test() {
+    #[test]
+    fn fork_test() {
 
-        //let v: Vec<u8> = vec!(1, 2, 3);
+        let v: Vec<u8> = vec!(1, 2, 3);
 
-        //let (original, fork) = iter_ok::<_, ()>(v).fork();
+        let (original, fork) = iter_ok::<_, ()>(v).fork();
 
-        //let c1: Vec<u8> = block_on(original.map(|a| a * 2)
-            //.collect()).unwrap();
+        let c1: Vec<u8> = original.map(|a| a * 2)
+            .collect().wait().unwrap();
 
-        //let c2: Vec<u8> = block_on(fork.map(|a| a * 3)
-            //.collect()).unwrap();
+        let c2: Vec<u8> = fork.map(|a| a * 3)
+            .collect().wait().unwrap();
 
-        //let r1: Vec<u8> = vec!(2, 4, 6);
-        //let r2: Vec<u8> = vec!(3, 6, 9);
+        let r1: Vec<u8> = vec!(2, 4, 6);
+        let r2: Vec<u8> = vec!(3, 6, 9);
 
-        //assert_eq!(c1, r1);
-        //assert_eq!(c2, r2);
-    //}
+        assert_eq!(c1, r1);
+        assert_eq!(c2, r2);
+    }
 
-    //#[test]
-    //fn fork_test2() {
+    #[test]
+    fn fork_test2() {
 
-        //let v: Vec<Rc<u8>> = vec!(Rc::new(1), Rc::new(2), Rc::new(3));
+        let v: Vec<Rc<u8>> = vec!(Rc::new(1), Rc::new(2), Rc::new(3));
 
-        //let (original, fork) = iter_ok::<_, ()>(v).fork();
+        let (original, fork) = iter_ok::<_, ()>(v).fork();
 
-        //let c1: Vec<u8> = block_on(original.map(|a| *a * 2)
-            //.collect()).unwrap();
+        let c1: Vec<u8> = original.map(|a| *a * 2)
+            .collect().wait().unwrap();
 
-        //let c2: Vec<u8> = block_on(fork.map(|a| *a * 3)
-            //.collect()).unwrap();
+        let c2: Vec<u8> = fork.map(|a| *a * 3)
+            .collect().wait().unwrap();
 
-        //let r1: Vec<u8> = vec!(2, 4, 6);
-        //let r2: Vec<u8> = vec!(3, 6, 9);
+        let r1: Vec<u8> = vec!(2, 4, 6);
+        let r2: Vec<u8> = vec!(3, 6, 9);
 
-        //assert_eq!(c1, r1);
-        //assert_eq!(c2, r2);
-    //}
+        assert_eq!(c1, r1);
+        assert_eq!(c2, r2);
+    }
 
     #[test]
     fn combine_latest_test() {
@@ -123,7 +123,6 @@ mod tests {
         let r: Vec<(u32, u32)> = rx1.combine_latest(rx2)
             .collect().wait().unwrap();
 
-        println!("{:?}", r);
         let c = vec![(1, 2), (1, 3), (4, 3), (5, 3), (6, 3), (6, 7)];
 
         assert_eq!(c, r);

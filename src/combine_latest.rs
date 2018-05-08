@@ -41,16 +41,20 @@ impl<S1, S2> Stream for CombineState<S1, S2>
 
     fn poll(&mut self) -> Poll<Option<Self::Item>, Self::Error> {
 
+        let mut value = false;
+
         match self.stream1.poll()? {
             Async::Ready(Some(item1)) => {
-                self.queued1 = Some(item1)
+                self.queued1 = Some(item1);
+                value = true;
             },
             _ => {},
         }
 
         match self.stream2.poll()? {
             Async::Ready(Some(item2)) => {
-                self.queued2 = Some(item2)
+                self.queued2 = Some(item2);
+                value = true;
             },
             _ => {},
         }
@@ -59,7 +63,7 @@ impl<S1, S2> Stream for CombineState<S1, S2>
             return Ok(Async::Ready(None))
         }
 
-        if self.queued1.is_some() && self.queued2.is_some() {
+        if value && self.queued1.is_some() && self.queued2.is_some() {
             let pair = (self.queued1.clone().unwrap(),
                         self.queued2.clone().unwrap());
             Ok(Async::Ready(Some(pair)))

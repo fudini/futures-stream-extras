@@ -16,13 +16,13 @@ mod tests {
     use std::cell::RefCell;
     use std::thread;
     use std::time::Duration;
-    use futures::sync::mpsc::{channel, unbounded};
-    use futures::{Future, Sink, Stream};
+    use futures::sync::mpsc::unbounded;
+    use futures::{Future, Stream};
     use futures::stream::{self, iter_ok};
 
     use flat_map::*;
     use distinct::*;
-    //use combine_latest::*;
+    use combine_latest::*;
     use scan::*;
     use scan2::*;
     use with_latest_from::*;
@@ -93,22 +93,41 @@ mod tests {
         //assert_eq!(c2, r2);
     //}
 
-    //// this test is a bit rubbish
-    //// need to find a way to test it with correct order
-    //#[test]
-    //fn combine_latest() {
+    #[test]
+    fn combine_latest() {
 
-        //let v1: Vec<u8> = vec!(1, 3, 5, 6, 7, 9);
-        //let v2: Vec<u8> = vec!(2, 4, 8);
+        let (tx1, rx1) = unbounded::<u32>();
+        let (tx2, rx2) = unbounded::<u32>();
 
-        //let s1 = iter_ok::<_, ()>(v1);
-        //let s2 = iter_ok::<_, ()>(v2);
+        // tx1: 1     4 5 6
+        // tx2:   2 3       7
+        //  cl:   1 1 4 5 6 6
+        //        2 3 3 3 3 7
+        thread::spawn(move || {
+            tx1.unbounded_send(1).unwrap();
+            thread::sleep(Duration::from_millis(1));
+            tx2.unbounded_send(2).unwrap();
+            thread::sleep(Duration::from_millis(1));
+            tx2.unbounded_send(3).unwrap();
+            thread::sleep(Duration::from_millis(1));
+            tx1.unbounded_send(4).unwrap();
+            thread::sleep(Duration::from_millis(1));
+            tx1.unbounded_send(5).unwrap();
+            thread::sleep(Duration::from_millis(1));
+            tx1.unbounded_send(6).unwrap();
+            thread::sleep(Duration::from_millis(1));
+            tx2.unbounded_send(7).unwrap();
+            thread::sleep(Duration::from_millis(1));
+        });
 
-        //let r: Vec<(u8, u8)> = block_on(s1.combine_latest(s2).collect()).unwrap();
-        //let c = vec!((1, 2), (3, 4), (5, 8), (6, 8), (7, 8), (9, 8));
+        let r: Vec<(u32, u32)> = rx1.combine_latest(rx2)
+            .collect().wait().unwrap();
 
-        //assert_eq!(c, r);
-    //}
+        println!("{:?}", r);
+        let c = vec![(1, 2), (1, 3), (4, 3), (5, 3), (6, 3), (6, 7)];
+
+        assert_eq!(c, r);
+    }
 
     #[test]
     fn with_latest_from() {

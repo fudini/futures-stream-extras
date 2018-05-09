@@ -1,5 +1,6 @@
 #[macro_use]
 extern crate futures;
+extern crate tokio_timer;
 
 pub mod flat_map;
 pub mod distinct;
@@ -8,6 +9,7 @@ pub mod scan2;
 pub mod combine_latest;
 pub mod with_latest_from;
 pub mod fork;
+pub mod delay;
 
 #[cfg(test)]
 mod tests {
@@ -27,6 +29,7 @@ mod tests {
     use scan2::*;
     use with_latest_from::*;
     use fork::*;
+    use delay::*;
 
     #[test]
     fn flat_map_test() {

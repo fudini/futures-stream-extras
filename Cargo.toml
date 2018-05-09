@@ -1,7 +1,8 @@
 [package]
 name = "futures-stream-extras"
 version = "0.1.0"
-authors = ["fudini <fudimi@gmail.com>"]
+authors = ["Daniel Fudala <daniel@fuda.la"]
 
 [dependencies]
 futures = "0.1.21"
+tokio-timer = "0.2.3"

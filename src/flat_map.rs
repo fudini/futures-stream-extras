@@ -1,6 +1,9 @@
 use futures::Stream;
 use futures::stream::{Flatten, Map};
 
+/// Basically map + flatten
+///
+/// This stream is returned by the `Stream::flat_map method.
 pub trait FlatMap: Stream {
 
     fn flat_map<S, F>(self: Self, f: F) -> Flatten<Map<Self, F>>

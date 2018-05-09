@@ -3,7 +3,7 @@ use futures::stream::Stream;
 
 /// It's like fold but yields aggregated  values over time
 ///
-/// This stream is returned by the `Stream::scan3 method.
+/// This stream is returned by the `Stream::scan method.
 #[derive(Debug)]
 #[must_use = "streams do nothing unless polled"]
 pub struct ScanState<S, F, T> {

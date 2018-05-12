@@ -10,6 +10,7 @@ pub mod combine_latest;
 pub mod with_latest_from;
 pub mod fork;
 pub mod delay;
+pub mod value;
 
 #[cfg(test)]
 mod tests {
@@ -20,6 +21,7 @@ mod tests {
     use std::time::Duration;
     use futures::sync::mpsc::unbounded;
     use futures::{Future, Stream};
+    use futures::future;
     use futures::stream::{self, iter_ok};
 
     use flat_map::*;
@@ -30,6 +32,7 @@ mod tests {
     use with_latest_from::*;
     use fork::*;
     use delay::*;
+    use value::*;
 
     #[test]
     fn flat_map_test() {
@@ -216,6 +219,11 @@ mod tests {
         let expected = vec![1, 2, 3, 4, 5, 6];
         
         assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn value_future_test() {
+        assert_eq!(future::ok::<u8, ()>(10).value(100).wait().unwrap(), 100);
     }
 }
 

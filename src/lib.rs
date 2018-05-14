@@ -19,6 +19,7 @@ mod tests {
     use std::cell::RefCell;
     use std::thread;
     use std::time::Duration;
+
     use futures::sync::mpsc::unbounded;
     use futures::{Future, Stream};
     use futures::future;
@@ -224,6 +225,19 @@ mod tests {
     #[test]
     fn value_future_test() {
         assert_eq!(future::ok::<u8, ()>(10).value(100).wait().unwrap(), 100);
+    }
+
+    #[test]
+    fn delay_test() {
+
+        let get_stream = || stream::iter_ok::<_, ()>(vec!(1, 2, 3, 4, 5, 6));
+
+        let result = get_stream()
+            .delay(Duration::from_millis(10))
+            .collect().wait().unwrap();
+
+        println!("{:?}", result);
+
     }
 }
 

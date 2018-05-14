@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate futures;
 extern crate tokio_timer;
+extern crate tokio_executor;
 
 pub mod flat_map;
 pub mod distinct;
@@ -12,6 +13,8 @@ pub mod fork;
 pub mod delay;
 pub mod value;
 
+mod support;
+
 #[cfg(test)]
 mod tests {
 
@@ -21,9 +24,11 @@ mod tests {
     use std::time::Duration;
 
     use futures::sync::mpsc::unbounded;
-    use futures::{Future, Stream};
-    use futures::future;
+    use futures::{future, Future, Stream};
+    use futures::Async::*;
     use futures::stream::{self, iter_ok};
+
+    use support::*;
 
     use flat_map::*;
     use distinct::*;
@@ -232,12 +237,20 @@ mod tests {
 
         let get_stream = || stream::iter_ok::<_, ()>(vec!(1, 2, 3, 4, 5, 6));
 
-        let result = get_stream()
-            .delay(Duration::from_millis(10))
-            .collect().wait().unwrap();
+        mocked(|timer, time| {
 
-        println!("{:?}", result);
+            let mut stream = get_stream()
+                .delay(time.now() + Duration::from_millis(10));
 
+            assert_eq!(stream.poll(), Ok(NotReady));
+
+            turn(timer, ms(20));
+            
+            assert_eq!(stream.poll(), Ok(Ready(Some(1))));
+            assert_eq!(stream.poll(), Ok(Ready(Some(2))));
+
+
+        })
     }
 }
 

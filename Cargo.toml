@@ -6,3 +6,4 @@ authors = ["Daniel Fudala <daniel@fuda.la"]
 [dependencies]
 futures = "0.1.21"
 tokio-timer = "0.2.3"
+tokio-executor = "0.1.1"

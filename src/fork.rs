@@ -17,9 +17,12 @@ impl<S> Stream for ForkState<S>
 
         match self.stream.poll() {
             Ok(Async::Ready(Some(i))) => {
-                // TODO: ununwrap ?
-                self.tx.unbounded_send(i.clone()).unwrap();
-                Ok(Async::Ready(Some(i)))
+                match self.tx.unbounded_send(i.clone()) {
+                    Ok(_) => Ok(Async::Ready(Some(i))),
+                    Err(_) => {
+                        panic!("forked stream must be polled");
+                    }
+                }
             },
             a => a,
         }

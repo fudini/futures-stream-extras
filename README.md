@@ -9,6 +9,8 @@ flat_map
 combine_latest
 with_latest_from
 scan
+delay
+fork
 
 ```
 

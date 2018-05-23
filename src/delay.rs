@@ -9,17 +9,22 @@ use value::*;
 ///
 /// This structure is produced by the `Stream::delay` method.
 #[must_use = "streams do nothing unless polled"]
-pub struct DelayState<S> where S: Stream {
+pub struct DelayState<S, F>
+where S: Stream,
+      F: Fn() -> Instant,
+{
     stream: S,
     duration: Duration,
     buffer: Vec<ValueState<Delay, Result<Option<S::Item>, S::Error>>>,
     delay_future: Option<ValueState<Delay, Result<Option<S::Item>, S::Error>>>,
+    get_now: F,
 }
 
-impl<S> Stream for DelayState<S>
+impl<S, F> Stream for DelayState<S, F>
     where S: Stream,
           S::Item: Debug,
           S::Error: Debug,
+          F: Fn() -> Instant,
 {
     type Item = S::Item;
     type Error = S::Error;
@@ -34,7 +39,8 @@ impl<S> Stream for DelayState<S>
 
         future_value.into_iter()
             .for_each(|v| {
-                let delay_future = Delay::new(Instant::now() + self.duration).value(v);
+                let now = (self.get_now)();
+                let delay_future = Delay::new(now + self.duration).value(v);
                 if self.delay_future.is_none() {
                     self.delay_future = Some(delay_future);
                 } else {
@@ -63,14 +69,16 @@ impl<S> Stream for DelayState<S>
 
 pub trait DelayStream: Stream {
 
-    fn delay(self: Self, duration: Duration) -> DelayState<Self>
-        where Self: Sized
+    fn delay<F>(self: Self, duration: Duration, get_now: F) -> DelayState<Self, F>
+        where Self: Sized,
+              F: Fn() -> Instant,
     {
         DelayState {
             stream: self,
             duration,
             buffer: vec![],
             delay_future: None,
+            get_now,
         }
     }
 }

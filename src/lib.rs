@@ -21,7 +21,7 @@ mod tests {
     use std::rc::Rc;
     use std::cell::RefCell;
     use std::thread;
-    use std::time::{Instant, Duration};
+    use std::time::Duration;
 
     use futures::sync::mpsc::unbounded;
     use futures::{future, Future, Stream};
@@ -240,12 +240,22 @@ mod tests {
         mocked(|timer, time| {
 
             let mut stream = get_stream()
-                .flat_map(|v| {
-                    stream::once(Ok(v)).delay(Duration::from_millis(100))
-                });
+                .delay(Duration::from_millis(100), || time.now());
 
-            // TODO: tests
-            
+            assert_eq!(Ok(NotReady), stream.poll());
+
+            time.advance(ms(100));
+            turn(timer, ms(10));
+            assert_eq!(Ok(Ready(Some(1))), stream.poll());
+
+            time.advance(ms(100));
+            turn(timer, ms(10));
+            assert_eq!(Ok(Ready(Some(2))), stream.poll());
+
+            time.advance(ms(100));
+            turn(timer, ms(10));
+            assert_eq!(Ok(Ready(Some(3))), stream.poll());
+
         })
     }
 }
